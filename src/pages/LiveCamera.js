@@ -1,12 +1,42 @@
-import React from 'react';
-import { FaCamera } from 'react-icons/fa';
+import React, { useState, useEffect } from 'react';
+import { FaCamera, FaRunning } from 'react-icons/fa';
+import { motion } from 'framer-motion';
 
 const LiveCamera = () => {
+    const [isMotionDetected, setIsMotionDetected] = useState(false);
+
+    // Auto-turn off motion alert after 5 seconds to simulate real-life behavior
+    useEffect(() => {
+        let timeout;
+        if (isMotionDetected) {
+            timeout = setTimeout(() => setIsMotionDetected(false), 5000);
+        }
+        return () => clearTimeout(timeout);
+    }, [isMotionDetected]);
+
     return (
         <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
                 <h1>Live Camera Feed</h1>
                 <div style={{ display: 'flex', gap: '1rem' }}>
+                    <button
+                        onClick={() => setIsMotionDetected(!isMotionDetected)}
+                        style={{
+                            background: isMotionDetected ? 'var(--danger-color)' : 'var(--bg-secondary)',
+                            border: 'none',
+                            padding: '0.5rem 1rem',
+                            borderRadius: '6px',
+                            color: '#fff',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            cursor: 'pointer',
+                            fontWeight: 'bold',
+                            transition: 'background 0.3s'
+                        }}
+                    >
+                        <FaRunning /> {isMotionDetected ? 'Motion Detected!' : 'Simulate Motion'}
+                    </button>
                     <button style={{
                         background: 'var(--bg-secondary)',
                         border: 'none',
@@ -22,15 +52,27 @@ const LiveCamera = () => {
                 </div>
             </div>
 
-            <div style={{
-                position: 'relative',
-                width: '100%',
-                paddingTop: '56.25%', /* 16:9 Aspect Ratio */
-                background: '#000',
-                borderRadius: '12px',
-                overflow: 'hidden',
-                boxShadow: 'var(--card-shadow)'
-            }}>
+            <motion.div
+                animate={{
+                    boxShadow: isMotionDetected
+                        ? ['0 0 0px var(--danger-color)', '0 0 20px var(--danger-color)', '0 0 0px var(--danger-color)']
+                        : 'var(--card-shadow)',
+                    borderColor: isMotionDetected ? 'var(--danger-color)' : 'transparent'
+                }}
+                transition={{
+                    duration: 1,
+                    repeat: isMotionDetected ? Infinity : 0
+                }}
+                style={{
+                    position: 'relative',
+                    width: '100%',
+                    paddingTop: '56.25%', /* 16:9 Aspect Ratio */
+                    background: '#000',
+                    borderRadius: '12px',
+                    overflow: 'hidden',
+                    border: '4px solid transparent'
+                }}
+            >
                 <div style={{
                     position: 'absolute',
                     top: 0,
@@ -71,7 +113,30 @@ const LiveCamera = () => {
                     }} />
                     <span style={{ color: '#fff', fontSize: '0.8rem', fontWeight: 'bold' }}>LIVE</span>
                 </div>
-            </div>
+
+                {/* Motion Alert Overlay */}
+                {isMotionDetected && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        style={{
+                            position: 'absolute',
+                            top: '1rem',
+                            right: '1rem',
+                            background: 'var(--danger-color)',
+                            color: '#fff',
+                            padding: '0.5rem 1rem',
+                            borderRadius: '6px',
+                            fontWeight: 'bold',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem'
+                        }}
+                    >
+                        <FaRunning /> MOTION DETECTED
+                    </motion.div>
+                )}
+            </motion.div>
 
             <div style={{ marginTop: '2rem', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem' }}>
                 {['Cam 1', 'Cam 2', 'Cam 3', 'Cam 4'].map((cam, idx) => (
